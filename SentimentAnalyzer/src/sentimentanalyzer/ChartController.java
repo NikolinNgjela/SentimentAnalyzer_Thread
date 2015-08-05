@@ -128,6 +128,26 @@ public class ChartController {
         this.updateTheIntervalString_counts();
     }
     
+    public void plotXYSeriesForWord(JPanel timeSeriesChart, EntryElementsManager listOfData, String word, int row,  int interval){
+        this.interval = interval;
+        int count = 0;
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        
+        final XYSeries series = new XYSeries(word);
+
+        int police = 0;
+        
+        int[] data = listOfData.getChartDataForWord(word);
+        for (int i = 0; i < data.length; i++){
+            series.add(i,data[i]);
+        }
+        series.setKey(word + " ");
+        dataset.addSeries(series);
+        //.postTheTimeSeriesChartOnTheGUI(timeSeriesChart, dataset, word, "counts", "words", row);
+        this.addLineOfDataTo_XYSeriesLineChart(dataset, row, this.plot_counter);
+        this.updateTheIntervalString_counts();
+    }
+    
     public void initializeCountWordsXYSeriesChart(JPanel timeSeriesChart, String title, String x, String y, int row, String whichOneToInitialize){
         if(whichOneToInitialize.equals("words")){
             this.postTheTimeSeriesChartOnTheGUI_words(timeSeriesChart, null, title, y, x, row);

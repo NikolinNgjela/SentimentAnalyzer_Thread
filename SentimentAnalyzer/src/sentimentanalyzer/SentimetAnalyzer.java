@@ -67,8 +67,8 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
         
         //TESTING DATES AND TIME SETTING, NOT TO PUT MANUALLY
         try{
-            Date testingDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-06-30 01:00:00.000");
-            Date testingDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("null");
+            Date testingDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-03-20 01:00:00.000");
+            Date testingDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-03-20 11:00:00.000");
             this.spnDayChoser.setValue(testingDateFrom);
             this.spnToTime.setValue(testingDateTo);
         }catch(Exception e){
@@ -81,8 +81,8 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
     
     //NEW FUNCTION TO CONTROL LISTENER ON THE CHECKBOXES////////////
     public void plotDataToGraphs_forXYSeriesChart_WordsCount(String word, int row){
+        this.charts.plotXYSeriesForWord(this.pnlWordsCount, this.listsForPloting_fromListManager, word, row, this.interval);
         if(this.localPlotingPolice_variableToCheckIfListIsFull_ifNullThenDoNotPlotGraph == 1){
-            this.charts.plotXYSeriesChart_withGivenWord(this.pnlWordsCount, this.listsForPloting_fromListManager, word, row, this.interval);
         }else{
             //WHAT TO DO IF LISTS ARE EMPTY AND NOT ABLE TO PLOT GRPAHS WITH DATA, MESSAGES etc.
         }

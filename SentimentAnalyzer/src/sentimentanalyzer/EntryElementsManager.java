@@ -6,7 +6,9 @@
 package sentimentanalyzer;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import javax.swing.JOptionPane;
 
 /**
@@ -35,17 +37,60 @@ public class EntryElementsManager {
     public ArrayList<EntryElementsDate> wordsAndCreatedDates_ofManager;
     public ArrayList<EntryElementsHolder> lists;
     
+    private LinkedList<Tweet> tweets;
+    
     public EntryElementsManager(int interval, LocalDateTime from, LocalDateTime to, ArrayList<EntryElementsDate> wordsAndCreatedDates){
         this.interval = interval;
         this.from = from;
         this.to = to;
      
         this.lists = new ArrayList<>();
-        this.wordsAndCreatedDates_ofManager = new ArrayList<>();
         
         this.wordsAndCreatedDates_ofManager = wordsAndCreatedDates;
         
         //JOptionPane.showMessageDialog(null, "FROM: " + from.toString() + "   TO: " + to.toString() + " Interval: " +  interval, "Data - EntryElementManager", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    public EntryElementsManager(int interval, LocalDateTime from, LocalDateTime to, LinkedList<Tweet> tweets){
+        this.interval = interval;
+        this.from = from;
+        this.to = to;
+     
+        this.lists = new ArrayList<>();
+        this.tweets = tweets;
+        
+    }
+    
+    public int[] getChartDataForWord(String word){
+        double difference = ChronoUnit.MINUTES.between(this.from, this.to);
+        double differenceDivInterval = difference / (this.interval * 60);
+        
+        // Using the floor method 
+        double numberOfSlots = Math.ceil(differenceDivInterval);
+        
+        int valueToInitialize = (int)numberOfSlots;
+        
+        int[] result = new int[valueToInitialize];
+        
+        for (Tweet t : tweets){
+            if (t.words.contains(word)){
+                double div2= ChronoUnit.MINUTES.between(this.from, t.createdAt);
+                double twwetdiff = div2 / (this.interval * 60);
+        
+        
+                double diff3 = Math.ceil(twwetdiff);
+        
+                int slot = (int)diff3 ;
+                
+               
+                
+                result[slot - 1] = result[slot -1] + 1;
+           
+                //
+                
+            }
+        }
+        return result;
     }
     
     public EntryElementsManager(){

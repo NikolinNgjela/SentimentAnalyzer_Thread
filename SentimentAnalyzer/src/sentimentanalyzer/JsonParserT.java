@@ -15,14 +15,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
-
+import java.util.LinkedList;
+import java.util.Locale;
+import javax.swing.table.DefaultTableModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
-import java.util.Locale;
-import javax.swing.table.DefaultTableModel;
+import org.json.simple.parser.ParseException;
 
 public class JsonParserT {
     private static final String filePath = "twitter.json";
@@ -37,6 +38,8 @@ public class JsonParserT {
     
     public Stopwords stopwords;
     
+    public LinkedList<Tweet> tweets;
+    
     private DefaultTableModel tableForPrint_model;
     
     
@@ -49,6 +52,8 @@ public class JsonParserT {
         this.storeCountedWords_forPloting = new EntryElementsManager();
         
         this.stopwords = new Stopwords();
+        
+        tweets = new LinkedList<Tweet>();
         
         this.tableForPrint_model = tableForPrint_model;
     }
@@ -74,45 +79,68 @@ public class JsonParserT {
 
             Iterator i = text.iterator();
             int count = 0;
-
+            
+            this.tweets.clear();
+            System.out.println("tetete");
             while (i.hasNext()) {
+                
+                Tweet tweet = new Tweet();
+                
                 count++;
                 JSONObject innerObj = (JSONObject) i.next();
                 JSONObject user_id = (JSONObject) innerObj.get("user");
 
-                System.out.println( count + " Content: " +  innerObj.get("text"));
+               // System.out.println( count + " Content: " +  innerObj.get("text"));
                 
-                System.out.println("Time of retrieval " + innerObj.get("created_at"));
+                //System.out.println("Time of retrieval " + innerObj.get("created_at"));
+                String createdAt = innerObj.get("created_at").toString();
+
+                //SPECIAL CASES WERE DATE IS NOT PARSED OK FROM JSON -- TEAM IN ITALY SHOULD CHECK THE JSON, IS NOT CORRECT SOME TIMES
+                createdAt = createdAt.replace("+0000 ", "");
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM d H:m:s yyyy", Locale.ENGLISH);
+                LocalDateTime date = LocalDateTime.parse(createdAt, formatter); //2015-03-21T10:42:05 -- i shton nje T ne mes
+
+                tweet.createdAt = date;
+                
+                
                 //System.out.println("The id of the user: " + user_id.get("id"));
                 
                 String holder = this.stopwords.cleanSpecialCharacters_onFullStringBeforeSplitting(innerObj.get("text").toString());
                 String holderTime = this.stopwords.cleanSpecialCharacters_onFullStringBeforeSplitting(innerObj.get("created_at").toString());
                 
-                System.out.println(holder);
-                System.out.println("    -" + holderTime);
+               // System.out.println(holder);
+                //System.out.println("    -" + holderTime);
                 
                 String[] individualWordsInsideTitle = holder.split(" ");
                 
                 for(int j=0; j<individualWordsInsideTitle.length; j++){
-                    this.llTitlesWords.add(this.stopwords.cleanSpecialCharacters(individualWordsInsideTitle[j]));
-
-                    //EXECUTE BELOW TWO LINES TO SEE HOW THE WORDS CHANGE
-                    //System.out.println("\t\t\t B:" + individualWordsInsideTitle[j]);
-                    //System.out.println("\t\t\t A:" + stopwords.cleanSpecialCharacters(individualWordsInsideTitle[j]));
+                    String output = this.stopwords.cleanSpecialCharacters(individualWordsInsideTitle[j]);
+                    this.llTitlesWords.add(output);
+                    tweet.words.add(output);
                 }
+                
+                for(int j=0; j<individualWordsInsideTitle.length; j++){
+                }
+                this.tweets.add(tweet);
                 
                 this.tableForPrint_model.addRow(new Object[] { holderTime, holder });
             }
-        }catch (Exception ex){
+        }catch (ParseException ex){
             System.out.println(ex.getMessage());        
         }
+    }
+    
+    public EntryElementsManager selectAndLoopOverResults_JSON_withDateTimes
+        (LocalDateTime from, LocalDateTime to, int interval, String jsonRequest){
+        return new EntryElementsManager(interval, from, to, this.tweets);
     }
     
     public void selectEvery6HoursPrintAndStoreResults(String jsonRequest){
         this.selectAndLoopOverResults_JSON(jsonRequest);
 
         this.llTitlesWords = stopwords.eraseStopwordsFromList(this.llTitlesWords);
-        this.countOccouranceOfEachWordInListAndPopulateNewLists_forUnsortedListsPopulation(this.llTitlesWords);
+        this.customFrequency(this.llTitlesWords);
 
         Collections.sort(this.storeCountedWords);
         this.printTop_fromInbuildMergeSort(10);
@@ -124,84 +152,22 @@ public class JsonParserT {
         this.selectAndLoopOverResults_JSON(jsonRequest);
 
         this.llTitlesWords = stopwords.eraseStopwordsFromList(this.llTitlesWords);
-        this.countOccouranceOfEachWordInListAndPopulateNewLists_forUnsortedListsPopulation(this.llTitlesWords);
+        this.customFrequency(this.llTitlesWords);
 
         Collections.sort(this.storeCountedWords);
 
         return this.storeCountedWords;
     }
     
-    
-    public Boolean selectAndLoopOverResults_JSON_withDateTimes(LocalDateTime from, LocalDateTime to, int interval, String jsonRequest){
-        try{
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(jsonRequest);
-            JSONArray text = (JSONArray) jsonObject.get("tweetsFeedback");
-
-            Iterator i = text.iterator();
-            int count = 0;
-
-            this.wordsAndCreatedDates.clear();
-            
-            while (i.hasNext()) {
-                
-                try{
-                    count++;
-                    JSONObject innerObj = (JSONObject) i.next();
-
-                    String holder = this.stopwords.cleanSpecialCharacters_onFullStringBeforeSplitting(innerObj.get("text").toString());
-                    //System.out.println(" L: -" + holder);
-                    String[] individualWordsInsideTitle = holder.split(" ");
-                    String createdAt = innerObj.get("created_at").toString();
-
-                    //SPECIAL CASES WERE DATE IS NOT PARSED OK FROM JSON -- TEAM IN ITALY SHOULD CHECK THE JSON, IS NOT CORRECT SOME TIMES
-                    createdAt = createdAt.replace("+0000 ", "");
-
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE MMM d H:m:s yyyy", Locale.ENGLISH);
-                    LocalDateTime date = LocalDateTime.parse(createdAt, formatter); //2015-03-21T10:42:05 -- i shton nje T ne mes
-
-                    for(int j=0; j<individualWordsInsideTitle.length; j++){
-                        EntryElementsDate element = new EntryElementsDate(this.stopwords.cleanSpecialCharacters(individualWordsInsideTitle[j]), date);
-                        //System.out.println(" R: -" + element.word + "- D: " + element.date.toString());
-                        this.wordsAndCreatedDates.add(element);
-                    }
-
-                    //System.out.println(" S: -" + this.wordsAndCreatedDates.size());
-                }catch(Exception e){
-                    System.out.println(e.getMessage() + " ERROR CAUGHT AT: selectAndLoopOverResults_JSON_withDateTimes() - inside WHILE LOOP, line 150, JSON RECORD IS NOT ABLE TO PARSE, JsonParserT, lines 164 - 173");
-                }
-            }
-            
-            this.storeCountedWords_forPloting = new EntryElementsManager(interval, from, to, this.wordsAndCreatedDates);
-            
-            return true; 
-        }catch (Exception ex){
-            System.out.println(ex.getMessage() + " ERROR CAUGHT AT: selectAndLoopOverResults_JSON_withDateTimes(), JsonParserT, lines 164 - 173");    
-            return false;
-        }
-    }
+ 
     
     //PREPARES ALL THE LISTS BASED ON THE INTERVAL ARGUMENT
     //MIGHT TAKE A WHILE TO RUN (on excecution)
     public EntryElementsManager selectListForMainWindow_forPloting_linkedListOfLinkedLists(LocalDateTime from, LocalDateTime to, int interval, String jsonRequest){
 
-        Boolean run = this.selectAndLoopOverResults_JSON_withDateTimes(from, to, interval, jsonRequest);
+        this.storeCountedWords_forPloting = selectAndLoopOverResults_JSON_withDateTimes(from, to, interval, jsonRequest);
+        return this.storeCountedWords_forPloting;
         
-        if(run){
-            this.storeCountedWords_forPloting.prepareLists();
-            this.storeCountedWords_forPloting.populateMyData();
-
-            //BELOW LOGICS ARE INTEGRATED INSIDE EACH EntryElementsHolder Object, EACH ONE COUNTS ITS OWN WORDS, MAIN FUNCTION CALLED FROM EntryElementsManager THAT LOOPS
-            //this.countOccouranceOfEachWordInListAndPopulateNewLists_forUnsortedListsPopulation(this.llTitlesWords);
-            //Collections.sort(this.storeCountedWords_forPloting);
-
-            this.storeCountedWords_forPloting.countAllWordsInTheLists();
-            //this.storeCountedWords_forPloting.sortAllWordsInTheLists_afterCounted();
-
-            return this.storeCountedWords_forPloting;
-        }
-        
-        return null;
     }
     
     public void countOccouranceOfEachWordInListAndPopulateNewLists_forUnsortedListsPopulation(ArrayList<String> words){
@@ -215,6 +181,26 @@ public class JsonParserT {
             }
         }
     }
+    
+     public void customFrequency(ArrayList<String> words){		    
+        HashMap<String, Integer > hm = new HashMap<>();		
+        		
+        for(int i=0; i<words.size(); i++){		
+            String key = words.get(i);		
+            			
+            if(hm.containsKey(key)){		
+                hm.put(key, hm.get(key) + 1);		
+            }else{		
+                hm.put(key, 1);		
+            }		
+        }		
+        		
+        for (String key : hm.keySet()){		
+            EntryElements entry = new EntryElements(key, hm.get(key));		
+            this.storeCountedWords.add(entry);		
+        }
+    }
+    
     
     public void printLLTitlesWords(){
         for(int i=0; i<this.llTitlesWords.size(); i++){
