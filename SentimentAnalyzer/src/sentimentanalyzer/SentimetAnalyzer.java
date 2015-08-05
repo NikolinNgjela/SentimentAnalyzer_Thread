@@ -68,7 +68,7 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
         //TESTING DATES AND TIME SETTING, NOT TO PUT MANUALLY
         try{
             Date testingDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-06-30 01:00:00.000");
-            Date testingDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-07-31 10:00:00.000");
+            Date testingDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("null");
             this.spnDayChoser.setValue(testingDateFrom);
             this.spnToTime.setValue(testingDateTo);
         }catch(Exception e){
@@ -468,6 +468,11 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
         txtKeyword.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         txtKeyword.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtKeyword.setText("renzi");
+        txtKeyword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtKeywordActionPerformed(evt);
+            }
+        });
         getContentPane().add(txtKeyword, new org.netbeans.lib.awtextra.AbsoluteConstraints(940, 10, 120, 30));
 
         jLabel7.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
@@ -598,6 +603,10 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "HTTP Request Successful", "HTTP Request", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_btnGetJsonHTTPActionPerformed
+
+    private void txtKeywordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtKeywordActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtKeywordActionPerformed
 
     /**
      * @param args the command line arguments
