@@ -124,7 +124,7 @@ public class JsonParserT {
                 }
                 this.tweets.add(tweet);
                 
-                this.tableForPrint_model.addRow(new Object[] { holderTime, holder });
+                this.tableForPrint_model.addRow(new Object[] { holderTime, holder, ClassifierWrapperT.ScoreResult() });
             }
         }catch (ParseException ex){
             System.out.println(ex.getMessage());        
