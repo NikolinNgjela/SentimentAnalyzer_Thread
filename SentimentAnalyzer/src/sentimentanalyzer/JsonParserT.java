@@ -42,6 +42,9 @@ public class JsonParserT {
     
     private DefaultTableModel tableForPrint_model;
     
+    //BEFORE LOOP
+    public ClassifierWrapperT cwTcaller;
+    
     
     public JsonParserT(DefaultTableModel tableForPrint_model){
         this.llTitlesWords = new ArrayList<>();
@@ -56,6 +59,9 @@ public class JsonParserT {
         tweets = new LinkedList<Tweet>();
         
         this.tableForPrint_model = tableForPrint_model;
+        
+        this.cwTcaller = new ClassifierWrapperT();
+        
     }
 
     //Clean all list before using
@@ -124,7 +130,7 @@ public class JsonParserT {
                 }
                 this.tweets.add(tweet);
                 
-                this.tableForPrint_model.addRow(new Object[] { holderTime, holder, ClassifierWrapperT.ScoreResult() });
+                this.tableForPrint_model.addRow(new Object[] { holderTime, holder, this.cwTcaller.ScoreResult() });
             }
         }catch (ParseException ex){
             System.out.println(ex.getMessage());        
