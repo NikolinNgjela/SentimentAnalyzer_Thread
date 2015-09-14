@@ -168,7 +168,7 @@ public class JsonParserT {
  
     
     //PREPARES ALL THE LISTS BASED ON THE INTERVAL ARGUMENT
-    //MIGHT TAKE A WHILE TO RUN (on excecution)
+    //MIGHT TAKE A WHILE TO RUN (on execution)
     public EntryElementsManager selectListForMainWindow_forPloting_linkedListOfLinkedLists(LocalDateTime from, LocalDateTime to, int interval, String jsonRequest){
 
         this.storeCountedWords_forPloting = selectAndLoopOverResults_JSON_withDateTimes(from, to, interval, jsonRequest);
