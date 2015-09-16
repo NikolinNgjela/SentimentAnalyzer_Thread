@@ -35,7 +35,7 @@ class SentixClassifier:
     
     def outfun(self,score):
         if type(score) is not complex:
-            return 0.0
+            return 45.0 # pi/4 radians == 45 degrees
         return math.atan2(score.imag,score.real)*180/math.pi
     
     def is_definite_form(self,textlist,i):
@@ -70,6 +70,13 @@ class SentixClassifier:
         for i in verbidxs:
             pscore += self.is_definite_form(tt,i)
         return pscore
+    
+    # not to be used, assumes that every text has already been cleaned
+    def polarity_by_tenses_batch(self,texts):
+        r=[]
+        for i in texts:
+            r.append(self.polarity_by_tenses(i))
+        return r
     
     def cleanandscore_sentiwords_singletext(self,text):
         # remove mentions and hastags, and URLs
@@ -125,9 +132,74 @@ class SentixClassifier:
         if a != 0:
             return self.outfun(score/a)
         else:
-            return 0
+            return 45.0 # pi/4 radians == 45 degrees
+    
     def cleanandscore_with_modifiers_batch(self,texts):
         r=[]
         for i in texts:
             r.append(self.cleanandscore_with_modifiers(i))
         return r
+    
+    # sentiment + subjectivity
+    def cleanandscore_full(self,texts):
+        r=[] # sentiment scores
+        sj=[] # subjectivity scores
+        for text in texts:
+            # remove mentions and hastags, and URLs
+            t0 = tco00.sub(' ',htg.sub(' ',mnt.sub(' ',text.lower())))
+            t1 = lowlevelclean(re.sub('[\r\n\t]',' ',utf16emojis2.sub(' ',utf16emojis1.sub(' ',t0))))
+            l=t1.split()
+            lmax=len(l)
+            
+            ### subjectivity ###
+            
+            # POS tagging
+            tt=tag(t1)
+            # indefinite forms lowen polarity, definite ones raise it
+            verbidxs = []
+            for i in list(range(len(tt))):
+                if tt[i][1] == 'VB' or tt[i][1] == 'VBN':
+                    verbidxs.append(i)
+            # accumulate polarity scores
+            pscore = 0
+            for i in verbidxs:
+                pscore += self.is_definite_form(tt,i)
+            sj.append(pscore)
+            
+            ### sentiment ###
+            
+            # array of modifier coefficients
+            mcoeffs = []
+            for w in l:
+                mcoeffs.append(1)
+            
+            for i in list(range(0,lmax)):
+                if l[i] in self.amplifiers:
+                    for j in list(range(1,int(math.floor(self.wsize/2)+1))):
+                        if i+j < lmax:
+                            mcoeffs[i+j] = mcoeffs[i+j] + self.gammaampfunc(j)
+                if l[i] in self.decrementers:
+                    for j in list(range(1,int(math.floor(self.wsize/2)+1))):
+                        if i+j < lmax:
+                            mcoeffs[i+j] = mcoeffs[i+j] + self.gammanegfunc(j)
+            
+            # array of sentiment scores
+            sentscores=[]
+            for w in l:
+                if w in self.sentiworddic.keys():
+                    sentscores.append(self.sentiworddic[w])
+                else:
+                    sentscores.append(0)
+            
+            # dot product
+            score = complex(0)
+            for i in list(range(0,lmax)):
+                score = score + mcoeffs[i]*sentscores[i]
+            
+            a=abs(score)
+            if a != 0:
+                b = self.outfun(score/a)
+            else:
+                b = 45.0
+            r.append(b)
+        return (r,sj)
