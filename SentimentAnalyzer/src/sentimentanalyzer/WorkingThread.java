@@ -1,9 +1,11 @@
+package sentimentanalyzer;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sentimentanalyzer;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +33,7 @@ public class WorkingThread extends SwingWorker<Integer, String> {
     public JPanel pnlWordsCount;
     
     private SentimetAnalyzer mainWindow;
+    private BatchTest_Parallel batchTest;
     
     public WorkingThread(String fromTime, String toTime, String url, String keyword, String decode, int interval, SentimetAnalyzer mainWindow, JPanel pnlWordsCount){
         this.fromTime = fromTime;
@@ -56,18 +59,31 @@ public class WorkingThread extends SwingWorker<Integer, String> {
         setProgress(progress);
         WorkingThread.failIfInterrupted();
         
+        publish("Init Score Calculation Engine");
+        this.batchTest = new BatchTest_Parallel();
+        
+        progress += 10;
+        setProgress(progress);
+        WorkingThread.failIfInterrupted();
+        
         publish("Requesting Json from URL...");
         //WE CAN USE THIS DIRECT CALL WITHOUT REFERENCE BECAUSE THE FUNCTION getJsonWithHTTPRequest IS STATIC
         this.responce = HTTPRequests.getJsonWithHTTPRequest(this.fromTime, this.toTime, this.keyword, this.decode, this.url);
         System.out.println(this.fromTime);
         
-        progress += 20;
+        progress += 10;
         setProgress(progress);
         WorkingThread.failIfInterrupted();
         
         publish("Parsing Json, populating the tables building initial ArrayList with words...");
-        JsonParserT jsonparsert = new JsonParserT(this.mainWindow.tableModelTitles);
+        JsonParserT jsonparsert = new JsonParserT(this.mainWindow.tableModelTitles, batchTest);
+        
+        
         ArrayList<EntryElements> list = jsonparsert.selectListForMainWindow(this.responce);
+        
+        
+        
+        
         
         progress += 20;
         setProgress(progress);
