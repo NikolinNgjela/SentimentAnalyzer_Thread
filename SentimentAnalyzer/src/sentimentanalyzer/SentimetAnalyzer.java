@@ -1,9 +1,11 @@
+package sentimentanalyzer;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sentimentanalyzer;
+
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -50,6 +52,9 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
     public int localPlotingPolice_variableToCheckIfListIsFull_ifNullThenDoNotPlotGraph = 0;
     
     private WorkingThread backgroundThreadWorker;
+    
+    
+    
 
     /**
      * Creates new form SentimetAnalyzer
@@ -65,10 +70,13 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
         this.charts.initializeCountWordsXYSeriesChart(this.pnlWordsSentiment, "Sentiment Score", "score", "word", 0, "sentiment");
         //KA NGA NJE FUNKSION IDENTIK SI KETO POR PA ___TESTER QE THIRRET ME VLERAT REALE KUR I GJENERON
         
+        
+        
+        
         //TESTING DATES AND TIME SETTING, NOT TO PUT MANUALLY
         try{
-            Date testingDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-03-20 01:00:00.000");
-            Date testingDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-03-20 11:00:00.000");
+            Date testingDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-03-21 09:55:00.000");
+            Date testingDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-03-21 10:00:00.000");
             this.spnDayChoser.setValue(testingDateFrom);
             this.spnToTime.setValue(testingDateTo);
         }catch(Exception e){
@@ -82,10 +90,6 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
     //NEW FUNCTION TO CONTROL LISTENER ON THE CHECKBOXES////////////
     public void plotDataToGraphs_forXYSeriesChart_WordsCount(String word, int row){
         this.charts.plotXYSeriesForWord(this.pnlWordsCount, this.listsForPloting_fromListManager, word, row, this.interval);
-        if(this.localPlotingPolice_variableToCheckIfListIsFull_ifNullThenDoNotPlotGraph == 1){
-        }else{
-            //WHAT TO DO IF LISTS ARE EMPTY AND NOT ABLE TO PLOT GRPAHS WITH DATA, MESSAGES etc.
-        }
     }
     
     public void removeDataFromGrpah_forXYSeriesChart_WordsCount(int row, String were){
