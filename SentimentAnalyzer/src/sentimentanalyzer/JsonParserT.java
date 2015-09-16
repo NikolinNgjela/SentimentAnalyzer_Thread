@@ -1,16 +1,19 @@
+package sentimentanalyzer;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 
-package sentimentanalyzer;
+
 
 /**
  *
  * @author Nikolin
  */
 
+import sentimentanalyzer.BatchTest_Parallel;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -18,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import javax.swing.table.DefaultTableModel;
 import org.json.simple.JSONArray;
@@ -41,12 +45,10 @@ public class JsonParserT {
     public LinkedList<Tweet> tweets;
     
     private DefaultTableModel tableForPrint_model;
-    
-    //BEFORE LOOP
-    public ClassifierWrapperT cwTcaller;
+    private BatchTest_Parallel batchScoreCalc;
     
     
-    public JsonParserT(DefaultTableModel tableForPrint_model){
+    public JsonParserT(DefaultTableModel tableForPrint_model, BatchTest_Parallel bt){
         this.llTitlesWords = new ArrayList<>();
         this.listToHoldCounted = new ArrayList<>();
         
@@ -60,7 +62,7 @@ public class JsonParserT {
         
         this.tableForPrint_model = tableForPrint_model;
         
-        this.cwTcaller = new ClassifierWrapperT();
+        batchScoreCalc = bt;
         
     }
 
@@ -87,8 +89,13 @@ public class JsonParserT {
             int count = 0;
             
             this.tweets.clear();
-            System.out.println("tetete");
-            while (i.hasNext()) {
+            
+            
+             List<String> l = new ArrayList<String>();
+            
+ 
+        
+             while (i.hasNext()) {
                 
                 Tweet tweet = new Tweet();
                 
@@ -96,7 +103,7 @@ public class JsonParserT {
                 JSONObject innerObj = (JSONObject) i.next();
                 JSONObject user_id = (JSONObject) innerObj.get("user");
 
-               // System.out.println( count + " Content: " +  innerObj.get("text"));
+                System.out.println( count + " Content: " +  innerObj.get("text"));
                 
                 //System.out.println("Time of retrieval " + innerObj.get("created_at"));
                 String createdAt = innerObj.get("created_at").toString();
@@ -112,10 +119,10 @@ public class JsonParserT {
                 
                 //System.out.println("The id of the user: " + user_id.get("id"));
                 
-                String holder = this.stopwords.cleanSpecialCharacters_onFullStringBeforeSplitting(innerObj.get("text").toString());
+                String holder =( count + ") " + " " + this.stopwords.cleanSpecialCharacters_onFullStringBeforeSplitting(innerObj.get("text").toString()));
                 String holderTime = this.stopwords.cleanSpecialCharacters_onFullStringBeforeSplitting(innerObj.get("created_at").toString());
                 
-               // System.out.println(holder);
+                //System.out.println(holder);
                 //System.out.println("    -" + holderTime);
                 
                 String[] individualWordsInsideTitle = holder.split(" ");
@@ -130,8 +137,21 @@ public class JsonParserT {
                 }
                 this.tweets.add(tweet);
                 
-                this.tableForPrint_model.addRow(new Object[] { holderTime, holder, this.cwTcaller.ScoreResult() });
+                l.add(innerObj.get("text").toString());
+                
+                this.tableForPrint_model.addRow(new Object[] { holderTime, holder, 0  });
             }
+            List<Integer> sentimentResult = batchScoreCalc.classify_sentiment(l);
+            
+            
+            int count2= 0;
+            for (Integer ll : sentimentResult){
+                this.tableForPrint_model.setValueAt(ll, count2, 2);
+                count2++;
+            }  
+            
+            
+            
         }catch (ParseException ex){
             System.out.println(ex.getMessage());        
         }
@@ -232,9 +252,3 @@ public class JsonParserT {
     
 }
     
-    
-    
-            
-            
-        
-
