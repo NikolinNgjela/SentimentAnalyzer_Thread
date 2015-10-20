@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -53,6 +54,8 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
     
     private WorkingThread backgroundThreadWorker;
     
+    public static final TimeZone tz = TimeZone.getTimeZone("Europe/Berlin");
+    
     
     
 
@@ -66,7 +69,7 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
         
         //KETO THIRREN VETEM PER TI TESTUAR QE PUNOJNE OK
         this.charts.createAndPopulatePieChart__TESTER(this.pnlPieChart);
-        this.charts.initializeCountWordsXYSeriesChart(this.pnlWordsCount, "Word Count", "count", "word", 0, "words");
+        this.charts.initializeCountWordsXYSeriesChart(this.pnlWordsCount, "Word Count", "Intervals of:", "word", 0, "words");
         this.charts.initializeCountWordsXYSeriesChart(this.pnlWordsSentiment, "Sentiment Score", "score", "word", 0, "sentiment");
         //KA NGA NJE FUNKSION IDENTIK SI KETO POR PA ___TESTER QE THIRRET ME VLERAT REALE KUR I GJENERON
         
@@ -74,11 +77,19 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
         
         
         //TESTING DATES AND TIME SETTING, NOT TO PUT MANUALLY
-        try{
-            Date testingDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-03-21 09:55:00.000");
-            Date testingDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").parse("2015-03-21 10:00:00.000");
-            this.spnDayChoser.setValue(testingDateFrom);
-            this.spnToTime.setValue(testingDateTo);
+        try{         
+            SimpleDateFormat testingDateFrom = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS");
+            testingDateFrom.setTimeZone(tz);
+            Date testingFromNew = testingDateFrom.parse("2015-09-22 01:00:00.000");
+           
+            SimpleDateFormat testingDateTo = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS");
+            testingDateTo.setTimeZone(tz);
+            Date testingToNew = testingDateTo.parse("2015-09-23 01:00:00.000");
+            
+
+            
+            this.spnDayChoser.setValue(testingFromNew);
+            this.spnToTime.setValue(testingToNew);
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -87,9 +98,33 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
         this.btnRun.setBackground(Color.green);
     }
     
+   
+    
     //NEW FUNCTION TO CONTROL LISTENER ON THE CHECKBOXES////////////
     public void plotDataToGraphs_forXYSeriesChart_WordsCount(String word, int row){
-        this.charts.plotXYSeriesForWord(this.pnlWordsCount, this.listsForPloting_fromListManager, word, row, this.interval);
+        if(this.localPlotingPolice_variableToCheckIfListIsFull_ifNullThenDoNotPlotGraph == 1){
+            this.charts.plotXYSeriesForWord(this.pnlWordsCount, this.listsForPloting_fromListManager, word, row, this.interval);
+        }else{
+            //WHAT TO DO IF LISTS ARE EMPTY AND NOT ABLE TO PLOT GRPAHS WITH DATA, MESSAGES etc.
+        }
+    } 
+    
+    
+    // ** FUNCTION TO CONTROL LISTENER ON THE CHECKBOXES // FOR THE SENTIMENT SCORE
+    
+    public void plotDataToGraphs_forXYSeriesChart_SentimentScore(String word, int row){
+        if(this.localPlotingPolice_variableToCheckIfListIsFull_ifNullThenDoNotPlotGraph == 1){
+            this.charts.plotXYSeriesForSentimentScore(this.pnlWordsSentiment, this.listsForPloting_fromListManager, word, row, this.interval);
+        }else{
+            //WHAT TO DO IF LISTS ARE EMPTY AND NOT ABLE TO PLOT GRPAHS WITH DATA, MESSAGES etc.
+        }
+    }
+    
+    
+    
+    //FUNCTION FOR PLOTING THE PIE CHART
+    public void plotPieChartGraphToMainWindow(double positive, double negative, double neutral){
+        this.charts.createAndPopulatePieChart(this.pnlPieChart, positive, negative, neutral);
     }
     
     public void removeDataFromGrpah_forXYSeriesChart_WordsCount(int row, String were){
@@ -97,8 +132,19 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
             this.charts.removeLIneOfDataTo_XYSeriesLineChart(row, were);
         }else if(were.equals("sentiment")){
             //later on
+            
         }
     }
+    
+    //Remove line of data from Sentiment Score
+    public void removeDataFromGrpah_forXYSeriesChart_SentimentScore(int row, String were){
+        if(were.equals("sentiment")){
+            this.charts.removeLIneOfDataTo_XYSeriesLineChart(row, were);
+  
+        }
+    }
+    
+    
     
     public void checkSelectedCells(String word){
         this.tableModelTopTen.removeTableModelListener(listenerForTableCheckboxes);
@@ -181,7 +227,7 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
     
     private void runWorkingCycle(){
         //PASSING ALL NECCESSARY PARAMETERS TO INITIALIZE AND USE THE THREAD LIKE IN THE MAIN WINDOW
-        this.backgroundThreadWorker = new WorkingThread(this.spnDayChoser.getValue().toString(), this.spnToTime.getValue().toString(), this.txtURL.getText(), this.txtKeyword.getText(), this.txtDecode.getText(), this.sldSubIntDuration.getValue(), this, this.pnlWordsCount);
+        this.backgroundThreadWorker = new WorkingThread((Date)this.spnDayChoser.getValue(), (Date)this.spnToTime.getValue(), this.txtURL.getText(), this.txtKeyword.getText(), this.txtDecode.getText(), this.sldSubIntDuration.getValue(), this, this.pnlWordsCount);
     
         this.backgroundThreadWorker.addPropertyChangeListener(new PropertyChangeListener(){
             @Override
@@ -471,7 +517,7 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
 
         txtKeyword.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         txtKeyword.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        txtKeyword.setText("renzi");
+        txtKeyword.setText("formula");
         txtKeyword.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtKeywordActionPerformed(evt);
@@ -507,10 +553,13 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
         this.toDateTime = (Date)this.spnToTime.getValue();
         
         System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(spnDayChoser.getValue()));
+        
+        
         System.out.println(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(spnToTime.getValue()));
 
         // *** Date convert to "yyyy/MM/dd HH:mm:ss"  fromDateTime
         SimpleDateFormat formater = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        formater.setTimeZone(tz);
         String fromDateTimeLocal = formater.format(spnDayChoser.getValue());
         
         try {
@@ -521,6 +570,7 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
 
         // *** Date convert to "yyyy/MM/dd HH:mm:ss"  toDateTIme
         SimpleDateFormat formater2 = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        formater2.setTimeZone(tz);
         String toDateTimeLocal = formater2.format(spnToTime.getValue());
         
         try {
@@ -529,16 +579,6 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
             Logger.getLogger(SentimetAnalyzer.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        //JOptionPane.showMessageDialog(null, "FROM: " + fromDateTime + "   TO: " + toDateTime , "The time you have selected...", JOptionPane.INFORMATION_MESSAGE);
-        DBManager dbmanager = new DBManager(2, this.fromDateTime, this.toDateTime);
-        
-        ArrayList<EntryElements> list;
-        list = dbmanager.selectListForMainWindow();
-        
-        //POPULATE CONTROLLER ON GUI
-        for(int i=0; i<Integer.parseInt(this.txtNumberOfWords.getText()); i++){
-           this.tableModelTopTen.addRow(new Object[] { list.get(i).getKey(), list.get(i).getValue(), Boolean.FALSE });
-        }
     }
     
     private void sldSubIntDurationMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sldSubIntDurationMouseClicked
@@ -578,7 +618,12 @@ public class SentimetAnalyzer extends javax.swing.JFrame {
     private void btnCleanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCleanActionPerformed
         // TODO add your handling code here:
         this.cleanTheTableModels();
-        this.charts.initializeCountWordsXYSeriesChart(this.pnlWordsCount, "Word Count", "count", "word", 0, "words");
+       // this.charts.initializeCountWordsXYSeriesChart(this.pnlWordsCount, "Word Count", "count", "word", 0, "words");
+        // Cleans the 3 charts and prepares them for a new operation
+        this.charts.createAndPopulatePieChart__TESTER(this.pnlPieChart);
+        this.charts.initializeCountWordsXYSeriesChart(this.pnlWordsCount, "Word Count", "Intervals of:", "word", 0, "words");
+        this.charts.initializeCountWordsXYSeriesChart(this.pnlWordsSentiment, "Sentiment Score", "score", "word", 0, "sentiment");
+        
     }//GEN-LAST:event_btnCleanActionPerformed
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
