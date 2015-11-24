@@ -1,13 +1,5 @@
 package sentimentanalyzer;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
-
 /**
  *
  * @author Nikolin
@@ -192,20 +184,6 @@ public class JsonParserT {
             this.occurrences_1 = Collections.frequency(sentimentResult, -1);
             
             
-            // Here we can output the compute of the AVERAGE Sentiment Score from the entire tweets 
-            /*
-            if (sentimentResult == null || sentimentResult.isEmpty())
-                System.out.println("0");
-                // Calculate the summation of the elements in the list
-                long sum = 0;
-                int n = sentimentResult.size();
-                // Iterating manually is faster than using an enhanced for loop.
-                for (int m = 0; m < n; m++)
-                    sum += sentimentResult.get(m);
-                // We don't want to perform an integer division, so the cast is mandatory.
-            
-            System.out.println("The average score is: " + ((double) sum)/n);
-            */
             
         }catch (ParseException ex){
             System.out.println(ex.getMessage());        
@@ -217,16 +195,7 @@ public class JsonParserT {
         return new EntryElementsManager(interval, from, to, this.tweets);
     }
     
-    /*    
-    public void selectEvery6HoursPrintAndStoreResults(String jsonRequest){
-        this.selectAndLoopOverResults_JSON(jsonRequest);
-
-        this.llTitlesWords = stopwords.eraseStopwordsFromList(this.llTitlesWords);
-        this.customFrequency(this.llTitlesWords);
-
-        Collections.sort(this.storeCountedWords);
-        this.printTop_fromInbuildMergeSort(10);
-    } */
+    
     
     public ArrayList<EntryElements> selectListForMainWindow(String jsonRequest){
         this.storeCountedWords.clear();
@@ -253,19 +222,6 @@ public class JsonParserT {
         
     } 
     
-    /*  
-    // Same function as the following one but it is use the ***Collection.frequency*** instead of the HashMap  
-    public void countOccouranceOfEachWordInListAndPopulateNewLists_forUnsortedListsPopulation(ArrayList<String> words){
-        for(int i=0; i<words.size(); i++){
-            if(!this.listToHoldCounted.contains(words.get(i))){
-                int count = Collections.frequency(words, words.get(i));
-                this.listToHoldCounted.add(words.get(i));
-                
-                EntryElements entry = new EntryElements(words.get(i), count);
-                this.storeCountedWords.add(entry);
-            }
-        }
-    }   */
     
      public void customFrequency(ArrayList<String> words){		    
         HashMap<String, Integer > hm = new HashMap<>();		
